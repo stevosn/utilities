@@ -10,7 +10,7 @@
 from scipy.signal import convolve
 from scipy import ones, sqrt, floor, resize, array
 
-def block_avg(x, n, t=None, fs=1.0, method=None):
+def block_avg(x, n, t=None, fs=1.0):
     """
     Calculate block averages of n data point of the given data in x.
     
@@ -28,11 +28,6 @@ def block_avg(x, n, t=None, fs=1.0, method=None):
         If t is given it should have the same length as x.
     fs : float
         Sampling frequency. Only relevant if t=None.
-    method : None or 'convolve'
-        For debugging. None let the function use 
-        resize(array, (floor(len(x)/n), n)) and then calculates the means
-        and stdev of the blocks of n data points. 'convolve' uses a convolution
-        approach to calculate the block averages, only.
     
     Returns
     -------
@@ -44,19 +39,16 @@ def block_avg(x, n, t=None, fs=1.0, method=None):
     std : array
         Standard deviations of the blocks.
     """
-    if method == 'convolve':
-        d = convolve(x, ones(n), mode='valid')
-        d_out = d[::n] / n
-        sem = d_out * 0.0
-    else:
-        N = len(x)
-        n = int(n)
-        m = int(floor(N/n))
-        d = resize(x.copy(), (m, n))
-        d_out = d.mean(axis=1)
-        sem = d.std(axis=1)
-    if t is None:
-        t = array([*range(len(data))]) / fs
-    t_out = t[::n][:len(d_out)] + t[:n].mean()
+    N = len(x)
+    n = int(n)
+    m = int(floor(N/n))
+    x_ = resize(x.copy(), (m, n))
+    x_ba = x_.mean(axis=1)
+    std = x_.std(axis=1)
     
-    return (t_out, d_out, sem)
+    if t is None:
+        t = array([*range(len(x))]) / fs
+
+    t_out = t[::n][:len(x_ba)] + t[:n].mean()
+    
+    return (t_out, x_ba, std)
