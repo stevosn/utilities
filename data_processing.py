@@ -8,7 +8,7 @@
 # some data processing related stuff
 ################################################################################
 from scipy.signal import convolve
-from scipy import ones, sqrt, floor
+from scipy import ones, sqrt, floor, resize, array
 
 def block_avg(x, n, t=None, fs=1.0, method=None):
     """
